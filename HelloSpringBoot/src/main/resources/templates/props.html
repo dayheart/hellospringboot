@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Hello JSPD Cloud Home Page</title>
+</head>
+<body>
+<table border="1">
+<tr>
+	<th>Property Name</th><th>Property Value</th>
+</tr>
+<tr th:each="prop : ${props}">
+	<td th:text="${prop.name}"></td>
+	<td th:text="${prop.value}"></td>
+</tr>
+</table>
+</body>
+</html>
