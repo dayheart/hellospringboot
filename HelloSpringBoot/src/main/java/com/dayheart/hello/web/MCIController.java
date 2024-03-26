@@ -7,13 +7,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
+import com.dayheart.hello.property.TierConfig;
 import com.dayheart.tcp.TCPClient;
+import com.dayheart.util.Utils;
 import com.dayheart.util.XLog;
 import com.inzent.igate.adapter.AdapterParameter;
 import com.inzent.igate.connector.IGateConnectorException;
@@ -25,98 +31,104 @@ import jakarta.servlet.http.HttpServletResponse;
 import kisb.sb.tmsg.SysHeader;
 import kisb.sb.tmsg.TelegramMessageUtil;
 
-@Controller
+//@Controller
+// org.thymeleaf.exceptions.TemplateInputException: Error resolving template [mci/json], template might not exist or might not be accessible by any of the configured Template Resolvers
+@RestController
 public class MCIController {
 	
-	// SEE TierConfig
-	@Value("${MCI.PROTOCOL}")
-	private String mciProtocol;
+	@Autowired
+	private TierConfig tierConfig;
 	
 	//@Value("#{tier['COR.HOST']}")
-	@Value("${MCI.HOST}")
-	private String mciHost;
 	
-	//@Value("#{tier['COR.PORT']}")
-	@Value("${MCI.PORT}")
-	private int mciPort;
-	
-	//@Value("#{tier['COR.OUT']}")
-	@Value("${MCI.OUT}")
-	private String mciOut;
-	
-	//@Value("#{tier['COR.PROTOCOL']}")
-	@Value("${COR.PROTOCOL}")
-	private String corProtocol;
-	
-	//@Value("#{tier['COR.HOST']}")
-	@Value("${COR.HOST}")
-	private String corHost;
-	
-	//@Value("#{tier['COR.PORT']}")
-	@Value("${COR.PORT}")
-	private int corPort;
-	
-	//@Value("#{tier['COR.OUT']}")
-	@Value("${COR.OUT}")
-	private String corOut;
-	
+
 	public MCIController() {
-		Properties prop = System.getProperties();
+	}
+	
+	//@GetMapping({"/mci/json"})
+	@PostMapping({"/mci/json"})
+	public void handleJsonRequest(@RequestBody Map<String, Object> sysHeader) {
+		//XLog.stdout(String.format("MAP [%s]", sysHeader));
 		
-		String mciI = prop.getProperty("MCI.PROTOCOL");
-		if(mciI!=null) {
-			mciProtocol = mciI;
-		}
+		executeRequest(sysHeader);
+		//XLog.stdout(String.format("MAP [%s]", sysHeader));
+	}
+	
+	//@GetMapping({"/mci/octet-stream"})
+	@PostMapping({"/mci/octet-stream"})
+	public void handleBytesRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		byte[] bytesHeader = TCPClient.retrieveBodyToBytes(request.getInputStream());
+		//XLog.stdout(String.format("BYTES [%s]", new String(bytesHeader)));
 		
-		String mciH = prop.getProperty("MCI.HOST");
-		if(mciH!=null) {
-			mciHost = mciH;
-		} 
+		Map<String, Object> sysHeader = SysHeader.toMap(bytesHeader);
 		
-		String mciP = prop.getProperty("MCI.PORT");
-		if(mciP!=null) {
-			try {
-				mciPort = Integer.parseInt(mciP);
-			}catch (NumberFormatException nfe) {
-				// TODO: handle exception
-				System.out.println(nfe);
-			}
-			
-		}
+		executeRequest(sysHeader);
+	}
+	
+	private void executeRequest(Map<String, Object> sysHeader) {
+		String sysCd = "MCI"; //sysCd(3) PRD, OFC, SAL, ORD, CST
+		// SYNC | ASYNC 세팅, 이후 전문에서 지속... 최종 FEP 에서 사용
+		String sync = "S";
+		SysHeader.setTRMST(sysHeader, sysCd, "S", sync); // Send/Recv, Sync/Async
+		
+		String egress = tierConfig.getEgress("MCI");
+		//XLog.stdout(String.format("MCI_EGRESS [%s]", egress));
+		String out = tierConfig.getOut("MCI");
+		if(egress!=null) {
+			String[] outlets = egress.split(",");
+			String url;
+			String protocol;
+			String host;
+			int port;
+			String uri;
+			int i = 0;
+			for(String outlet:outlets) {
+				//XLog.stdout(String.format("EGRESS[%d]:%s", i++, outlet));
+				switch(outlet) {
+				case "ESB" :
+					SysHeader.setINFC(sysHeader, "OFFICES", "N", "", SysHeader.TMSG_SVC_ID.getField(sysHeader)); // INFC_ID(part), SVC_ID(eng)
+					break;
+				case "COR" :
+					SysHeader.setINFC(sysHeader, "ORDERS", "N", "", SysHeader.TMSG_SVC_ID.getField(sysHeader)); // INFC_ID(part), SVC_ID(eng)
+					break;
+				default :
+					SysHeader.setINFC(sysHeader, "SALESREPS", "N", "", SysHeader.TMSG_SVC_ID.getField(sysHeader)); // INFC_ID(part), SVC_ID(eng)
+				}
 				
-		String mciO = prop.getProperty("MCI.OUT");
-		if(mciO!=null) {
-			mciOut = mciO;
-		}
-		
-		String coI = prop.getProperty("COR.PROTOCOL");
-		if(coI!=null) {
-			corProtocol = coI;
-		}
-		
-		String coH = prop.getProperty("COR.HOST");
-		if(coH!=null) {
-			corHost = coH;
-		} 
-		
-		String coP = prop.getProperty("COR.PORT");
-		if(coP!=null) {
-			try {
-				corPort = Integer.parseInt(coP);
-			}catch (NumberFormatException nfe) {
-				// TODO: handle exception
-				System.out.println(nfe);
-			}
-			
-		}
+				protocol = tierConfig.getProtocol(outlet.toUpperCase());
+				host = tierConfig.getHost(outlet.toUpperCase());
+				port = tierConfig.getPort(outlet.toUpperCase());
+				uri = tierConfig.getUri(outlet.toUpperCase());
+				String[] uris = uri.split(",");
 				
-		String coO = prop.getProperty("COR.OUT");
-		if(coO!=null) {
-			corOut = coO;
+				int idx = Utils.getRandomNumber(0, (uris.length));
+				uri = uris[idx];
+				url = String.format("%s://%s:%d%s", protocol,host,port,uri);
+				
+				String responseStr = null;
+				if(uri.endsWith("json")) {
+					responseStr = TCPClient.executeJsonByApacheHttpClient(url, "POST", SysHeader.toJsonString(sysHeader));
+				} else {
+					responseStr = new String( TCPClient.executeBytesByApacheHttpClient(url, "POST", SysHeader.toBytes(sysHeader)));
+				}
+				
+				XLog.stdout("MCI_OUT_URL: " + url);
+				
+			}
 		}
 	}
 	
-	@PostMapping({"/mci/igate", "/esb/tibco"})
+	/*
+	 * Invalid mapping pattern detected: /**\/mcin\/**
+^
+No more pattern data allowed after {*...} or ** pattern element
+
+Action:
+
+Fix this pattern in your application or switch to the legacy parser implementation with 'spring.mvc.pathmatch.matching-strategy=ant_path_matcher'.
+	 */
+	//@PostMapping({"/**"})
+	@PostMapping({"/mci/old"})
 	public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String path = (String)request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
 		//System.out.println(path);
@@ -163,7 +175,7 @@ public class MCIController {
 						
 			try {
 				String coreUri = "/cor/core_tmax_fep.jsp";
-				url = corProtocol + "://" + corHost + ":" + corPort + coreUri;
+				//url = corProtocol + "://" + corHost + ":" + corPort + coreUri;
 				//url = corProtocol + "://" + esbHost + ":" + esbPort + request.getContextPath() + "/ESB";
 				
 				SocketConnector connector = null;
@@ -181,6 +193,7 @@ public class MCIController {
 				}
 				
 				// 전송 전문 만들기.
+				/*
 				if(mciOut.equalsIgnoreCase("octet-stream")) {
 					b_request = tmsgUtil.setSendMessageInfo(req_sysHeader, "MCI", "S", SysHeader.TMSG_SYNCZ_SECD.getField(req_sysHeader).trim(), "_____MCI______TRANSACTION_REQUEST_MESSAGE_BODY_____ZZ".getBytes());
 					String ALL_TMSG_LNTH = String.format("%08d", b_request.length);
@@ -189,7 +202,7 @@ public class MCIController {
 					Method m = adapterParameter.getClass().getMethod("setRequestData", new Class[] { byte[].class });
 					m.invoke(adapterParameter, new Object[] { b_request });
 				}
-				
+				*/
 				connector = new SocketConnector();
 				connector.callService(adapterParameter);
 			

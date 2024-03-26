@@ -12,8 +12,30 @@ productsApp.controller('productsCtrl', function($scope, $http) {
 			$scope.products = data;
 		});
 	};
+	
+	var selectedElement = null;
+	$scope.ngClickItem = function(obj, actionUri) {
+		//console.log(product);
+		// {PRICE: 652, QTY_ON_HAND: 3, DESCRIPTION: 'Handle', MFR_ID: 'BIC', PRODUCT_ID: '41003', …}
+		
+		if(selectedElement!=null) {
+			selectedElement.bgColor = '';
+		}
+		
+		selectedElement = document.getElementById(obj.MFR_ID + "-" + obj.PRODUCT_ID);
+			if(selectedElement!=null) {
+				selectedElement.bgColor = 'chartreuse';
+			}
+		
+		callProduct(obj.MFR_ID, obj.PRODUCT_ID, actionUri);
+	};
 
 });
+
+function thClickItem (obj, actionUri) {
+	console.log(obj);
+	
+};
 
 function responseHandler(response, event) {
 	//console.log(response);
@@ -42,7 +64,7 @@ function callProduct(mfrId, productId, the_uri, callback=responseHandler) {
 	// with FILE EXTENSION the_uri = window.location.protocol + "//" + window.location.host + window.location.pathname + the_uri + '.pwkjson';
 	the_uri = window.location.protocol + "//" + window.location.host + the_uri;
 	
-	/////console.log(the_uri);
+	//console.log(the_uri);
 
 	xhr.open("GET", the_uri, true); // true for asynchronous
 

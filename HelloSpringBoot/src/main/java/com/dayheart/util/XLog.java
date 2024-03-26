@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class XLog {
 	
-	public static boolean isDebug = false;
+	public static boolean isDebug = true;
 	
 	public static void stdout(String msg) {
 		

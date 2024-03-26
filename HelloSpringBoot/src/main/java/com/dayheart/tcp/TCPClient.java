@@ -70,6 +70,15 @@ public class TCPClient {
 		return executeByApacheHttpClient(url, method, headers, jsonString);
 	}
 	
+	public static String executeXmlByApacheHttpClient(String url, String method, String xmlString) {
+		
+		Map<String, String> headers = new HashMap<String, String>();
+		headers.put("Content-Type", "application/xml");
+		headers.put("Accept", "application/xml");
+		
+		return executeByApacheHttpClient(url, method, headers, xmlString);
+	}
+	
 	
 	public static String executeByJerseyClient(String url, String method, String jsonString) {
 		Map<String, String> headers = new HashMap<String, String>();
@@ -208,6 +217,7 @@ public class TCPClient {
 	 */
 	public static byte[] executeByApacheHttpClient(String url, String method, Map<String, String> headers, byte[] bytesEntity) {
 		
+		XLog.stdout("FORWARD URL [" + url + "]");
 		XLog.stdout("METHOD [" + method + "]");
 		
 		CloseableHttpClient httpClient = HttpClients.createDefault();

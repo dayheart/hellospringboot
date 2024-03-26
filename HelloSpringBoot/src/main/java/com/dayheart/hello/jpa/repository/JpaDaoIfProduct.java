@@ -14,7 +14,7 @@ import com.dayheart.hello.jpa.ProductId;
  * @author dayheart
  *
  */
-public interface ProductDAO extends JpaRepository<Product, ProductId> {
+public interface JpaDaoIfProduct extends JpaRepository<Product, ProductId> {
 	
 	@Query("SELECT p FROM products p where p.mfrId = :mfrId and p.productId = :productId")
 	Product retrieveByProduct(@Param("mfrId") String mfrId, @Param("productId") String productId);

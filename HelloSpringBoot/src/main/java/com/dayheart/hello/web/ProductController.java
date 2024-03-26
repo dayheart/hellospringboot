@@ -7,6 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import com.dayheart.util.XLog;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
@@ -16,7 +18,7 @@ public class ProductController {
 	public String homePage(HttpServletRequest request, Model model) {
 		
 		String contextPath = request.getContextPath();
-		System.out.println(String.format("CONTEXT_PATH[%s]", contextPath));
+		XLog.stdout(String.format("CONTEXT_PATH[%s]", contextPath));
 		model.addAttribute("context_path", contextPath);
 		return "hello_products";
 	}
