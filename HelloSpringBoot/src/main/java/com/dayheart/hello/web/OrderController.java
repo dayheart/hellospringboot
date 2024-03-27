@@ -23,7 +23,7 @@ import com.dayheart.hello.web.exception.BookNotFoundException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/book")
 public class OrderController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class OrderController {
     @Autowired
     private OrderDAO orderRepository;
 
-    @GetMapping
+    @GetMapping("/orders")
     public List<Order> findAll() {
     	return orderRepository.findAll();
     }
