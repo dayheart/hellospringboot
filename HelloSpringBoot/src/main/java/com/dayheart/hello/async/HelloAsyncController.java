@@ -1,4 +1,4 @@
-package com.dayheart.hello.controller;
+package com.dayheart.hello.async;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
