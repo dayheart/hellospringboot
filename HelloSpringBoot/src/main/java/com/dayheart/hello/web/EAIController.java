@@ -34,22 +34,26 @@ import kisb.sb.tmsg.TelegramMessageUtil;
 //@Controller
 // org.thymeleaf.exceptions.TemplateInputException: Error resolving template [mci/json], template might not exist or might not be accessible by any of the configured Template Resolvers
 @RestController
-public class CORController {
+public class EAIController {
 	
 	@Autowired
 	private TierConfig tierConfig;
+	
+	//@Value("#{tier['COR.HOST']}")
+	
 
-	public CORController() {
+	public EAIController() {
 	}
 	
-	@PostMapping({"/cor/json"})
+	@PostMapping({"/eai/json"})
 	public void handleJsonRequest(@RequestBody Map<String, Object> sysHeader) {
 		//XLog.stdout(String.format("MAP [%s]", sysHeader));
+		
 		executeRequest(sysHeader);
 		//XLog.stdout(String.format("MAP [%s]", sysHeader));
 	}
 	
-	@PostMapping({"/cor/octet-stream"})
+	@PostMapping({"/eai/octet-stream"})
 	public void handleBytesRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		byte[] bytesHeader = TCPClient.retrieveBodyToBytes(request.getInputStream());
 		//XLog.stdout(String.format("BYTES [%s]", new String(bytesHeader)));
@@ -60,14 +64,14 @@ public class CORController {
 	}
 	
 	private void executeRequest(Map<String, Object> sysHeader) {
-		String sysCd = "COR"; //sysCd(3) PRD, OFC, SAL, ORD, CST
+		String sysCd = "EAI"; //sysCd(3) PRD, OFC, SAL, ORD, CST
 		// SYNC | ASYNC 세팅, 이후 전문에서 지속... 최종 FEP 에서 사용
 		String sync = "S";
 		SysHeader.setTRMST(sysHeader, sysCd, "S", sync); // Send/Recv, Sync/Async
 		
-		String egress = tierConfig.getEgress("COR");
+		String egress = tierConfig.getEgress("EAI");
 		//XLog.stdout(String.format("MCI_EGRESS [%s]", egress));
-		String out = tierConfig.getOut("COR");
+		String out = tierConfig.getOut("EAI");
 		if(egress!=null) {
 			String[] outlets = egress.split(",");
 			String url;
@@ -109,7 +113,7 @@ public class CORController {
 					responseStr = new String( TCPClient.executeBytesByApacheHttpClient(url, "POST", SysHeader.toBytes(sysHeader)));
 				}
 				
-				XLog.stdout("COR_OUT_URL: " + url);
+				XLog.stdout("EAI_OUT_URL: " + url);
 				
 			}
 		}
