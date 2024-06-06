@@ -68,7 +68,7 @@ public class CORController {
 		String egress = tierConfig.getEgress("COR");
 		//XLog.stdout(String.format("MCI_EGRESS [%s]", egress));
 		String out = tierConfig.getOut("COR");
-		if(egress!=null) {
+		if(egress!=null && egress.length()>0) {
 			String[] outlets = egress.split(",");
 			String url;
 			String protocol;

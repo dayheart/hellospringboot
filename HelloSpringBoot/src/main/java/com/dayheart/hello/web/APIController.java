@@ -72,7 +72,7 @@ public class APIController {
 		String egress = tierConfig.getEgress("API");
 		//XLog.stdout(String.format("MCI_EGRESS [%s]", egress));
 		String out = tierConfig.getOut("API");
-		if(egress!=null) {
+		if(egress!=null && egress.length()>0) {
 			String[] outlets = egress.split(",");
 			String url;
 			String protocol;
@@ -114,9 +114,14 @@ public class APIController {
 				}
 				
 				XLog.stdout("API_OUT_URL: " + url);
-				
 			}
-		}
+		} // end of egress
+		
+		String host = tierConfig.getHost("API");
+		int port = tierConfig.getPort("API");
+		String addr = String.format("http://%s:%d/api/helloAsync", host, port);
+		String asyncRes = TCPClient.executeJsonByApacheHttpClient(addr, "GET", SysHeader.toJsonString(sysHeader));
+		
 	}
 	
 }

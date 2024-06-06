@@ -19,9 +19,15 @@ import org.springframework.web.client.RestTemplate;
 
 import com.dayheart.hello.jpa.Office;
 import com.dayheart.hello.jpa.Product;
+import com.dayheart.hello.property.TierConfig;
+import com.dayheart.util.Utils;
 
 @Service
 public class HelloAsyncService {
+	
+	@Autowired
+	TierConfig tierConfig;
+	
 	private static Logger log = LoggerFactory.getLogger(HelloAsyncService.class);
 	
 	/*@Autowired
@@ -57,28 +63,41 @@ Relying upon circular references is discouraged and they are prohibited by defau
 	 */
 	@Async
 	public CompletableFuture<Product[]> getProducts() throws InterruptedException {
+		String host = tierConfig.getHost("API");
+		int port = tierConfig.getPort("API");
+		String addr = String.format("%s:%d", host, port);
+		
 		log.info("getProducts starts");
 		RestTemplate restTemplate = new RestTemplate();
-		Product[] productsData = restTemplate.getForObject("http://localhost:8080/api/products", Product[].class);
+		Product[] productsData = restTemplate.getForObject("http://" + addr + "/api/products", Product[].class);
 		log.info("productsData, {}", productsData);
-		Thread.sleep(1000L);
+		int sleep = Utils.getRandomNumber(1, 9);
+		Thread.sleep(sleep*100);
 		log.info("getProducts completed");
 		return CompletableFuture.completedFuture(productsData);
 	}
 	
 	@Async
 	public CompletableFuture<List<Object>> getOffices() throws InterruptedException {
+		String host = tierConfig.getHost("API");
+		int port = tierConfig.getPort("API");
+		String addr = String.format("%s:%d", host, port);
+		
 		log.info("getOffices starts");
 		RestTemplate restTemplate = new RestTemplate();
-		List<Object> officesData = restTemplate.getForObject("http://localhost:8080/api/offices", List.class);
+		List<Object> officesData = restTemplate.getForObject("http://" + addr + "/api/offices", List.class);
 		log.info("officesData, {}", officesData);
-		Thread.sleep(1000L);
-		log.info("getOffices completed");
+		int sleep = Utils.getRandomNumber(1, 9);
+		Thread.sleep(sleep*100);
 		return CompletableFuture.completedFuture(officesData);
 	}
 	
 	@Async
 	public CompletableFuture<Object> getOffice(int office) throws InterruptedException {
+		String host = tierConfig.getHost("API");
+		int port = tierConfig.getPort("API");
+		String addr = String.format("%s:%d", host, port);
+		
 		log.info("getOffice starts");
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
@@ -86,10 +105,11 @@ Relying upon circular references is discouraged and they are prohibited by defau
 		headers.set("office", Integer.toString(office));
 		
 		HttpEntity<String> entity = new HttpEntity<>(headers);
-		ResponseEntity<Object> responseEntity = restTemplate.exchange("http://localhost:8080/api/office", HttpMethod.GET, entity, Object.class);
+		ResponseEntity<Object> responseEntity = restTemplate.exchange("http://" + addr + "/api/office", HttpMethod.GET, entity, Object.class);
 		
 		log.info("officeData, {}", responseEntity);
-		Thread.sleep(1000L);
+		int sleep = Utils.getRandomNumber(1, 9);
+		Thread.sleep(sleep*100);
 		log.info("getOffice completed");
 		
 		return CompletableFuture.completedFuture(responseEntity.getBody());

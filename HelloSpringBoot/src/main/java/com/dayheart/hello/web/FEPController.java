@@ -70,9 +70,9 @@ public class FEPController {
 		SysHeader.setTRMST(sysHeader, sysCd, "S", sync); // Send/Recv, Sync/Async
 		
 		String egress = tierConfig.getEgress("FEP");
-		//XLog.stdout(String.format("MCI_EGRESS [%s]", egress));
+		XLog.stdout(String.format("%s_EGRESS [%s]", sysCd, egress));
 		String out = tierConfig.getOut("FEP");
-		if(egress!=null) {
+		if(egress!=null && egress.length()>0) {
 			String[] outlets = egress.split(",");
 			String url;
 			String protocol;

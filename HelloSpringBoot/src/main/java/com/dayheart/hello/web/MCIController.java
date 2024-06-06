@@ -74,8 +74,9 @@ public class MCIController {
 		String egress = tierConfig.getEgress("MCI");
 		//XLog.stdout(String.format("MCI_EGRESS [%s]", egress));
 		String out = tierConfig.getOut("MCI");
-		if(egress!=null) {
-			String[] outlets = egress.split(",");
+		if(egress!=null && egress.length()>0) {
+			String[] outlets = egress.split(","); // BE CAREFULL
+			//XLog.stdout(String.format("MCI_OUTLETS [%s], len:%d", outlets, outlets.length));// [Ljava.lang.String;@7d26cead], len:1
 			String url;
 			String protocol;
 			String host;

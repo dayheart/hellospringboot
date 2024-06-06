@@ -44,6 +44,5 @@ public class HelloAsyncController {
 			log.info(String.format("PRODUCT [%s]", p));
 		}
 		*/
-		
 	}
 }
