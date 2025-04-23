@@ -47,7 +47,8 @@ public class ProductRestController {
     
     @GetMapping("/api/product")
     //public Product retrieveByProduct(@RequestHeader(HttpHeaders.ACCEPT_LANGUAGE) String language) {
-    public ResponseEntity<Product> retrieveByProduct(@RequestHeader("mfr_id") String mfrId, @RequestHeader("product_id") String productId) {
+    // for nginx underscores_in_headers off;
+    public ResponseEntity<Product> retrieveByProduct(@RequestHeader("mfr-id") String mfrId, @RequestHeader("product-id") String productId) {
     	/*
     	 * 	at java.base/java.lang.Thread.dumpStack(Thread.java:1389)
 	at com.dayheart.hello.web.ProductRestController.retrieveByProduct(ProductRestController.java:52)
@@ -75,7 +76,9 @@ public class ProductRestController {
 		SysHeader.setTRMST(sysHeader, sysCd, "S", sync); // Send/Recv, Sync/Async
 		
 		//SysHeader.setINFC(sysHeader, String.format("%s-%s", mfrId, productId), "N", "", String.format("%s-%s", mfrId, productId)); // INFC_ID(part), SVC_ID(eng)
-		SysHeader.setINFC(sysHeader, "OFFICES", "N", "", String.format("%s-%s", mfrId, productId)); // INFC_ID(part), SVC_ID(eng)
+		//SysHeader.setINFC(sysHeader, "OFFICES", "N", "", String.format("%s-%s", mfrId, productId)); // INFC_ID(part), SVC_ID(eng)
+		// 2025.03.10 changing for Tmax5_tcpgw_outbound
+		SysHeader.setINFC(sysHeader, "OFFICES", "N", mfrId, productId);
 		
 		//System.out.println( Thread.currentThread().getStackTrace()[1] + " : " + "[" + new String( SysHeader.toBytes(header))  + "]");
 		String url = null;

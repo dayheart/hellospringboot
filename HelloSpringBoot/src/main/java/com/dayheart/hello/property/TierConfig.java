@@ -137,6 +137,25 @@ public class TierConfig {
 	@Value("${API.EGRESS}")
 	private String apiEgress;
 	
+	@Value("${IGT.PROTOCOL}")
+	private String igtProtocol;
+	
+	@Value("${IGT.HOST}")
+	private String igtHost;
+	
+	@Value("${IGT.PORT}")
+	private int igtPort;
+	
+	@Value("${IGT.URI}")
+	private String igtUri;
+	private String[] igtUris = null;
+	
+	@Value("${IGT.OUT}")
+	private String igtOut;
+	
+	@Value("${IGT.EGRESS}")
+	private String igtEgress;
+	
 	
 	@Bean
 	public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
@@ -212,6 +231,9 @@ public class TierConfig {
 		case "FEP" :
 			tiervalue = this.fepProtocol;
 			break;
+		case "IGT" :
+			tiervalue = this.igtProtocol;
+			break;
 		default :
 			tiervalue = this.mciProtocol;
 			break;
@@ -241,6 +263,9 @@ public class TierConfig {
 		case "FEP" :
 			tiervalue = this.fepHost;
 			break;
+		case "IGT" :
+			tiervalue = this.igtHost;
+			break;
 		default :
 			tiervalue = this.mciHost;
 			break;
@@ -269,6 +294,9 @@ public class TierConfig {
 			break;
 		case "FEP" :
 			tiervalue = this.fepPort;
+			break;
+		case "IGT" :
+			tiervalue = this.igtPort;
 			break;
 		default :
 			tiervalue = this.mciPort;
@@ -309,6 +337,9 @@ public class TierConfig {
 			break;
 		case "FEP" :
 			tiervalue = this.fepUri;
+			break;
+		case "IGT" :
+			tiervalue = this.igtUri;
 			break;
 		default :
 			tiervalue = this.mciUri;
@@ -354,6 +385,9 @@ public class TierConfig {
 		case "FEP" :
 			tiervalue = this.fepOut;
 			break;
+		case "IGT" :
+			tiervalue = this.igtOut;
+			break;
 		default :
 			tiervalue = this.mciOut;
 			break;
@@ -383,6 +417,9 @@ public class TierConfig {
 			break;
 		case "FEP" :
 			tiervalue = this.fepEgress;
+			break;
+		case "IGT" :
+			tiervalue = this.igtEgress;
 			break;
 		default :
 			tiervalue = this.mciEgress;

@@ -4,7 +4,10 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -338,7 +341,11 @@ public enum SysHeader {
 	}
 	
 	public static byte[] toBytes(Map<String, ?> map) {
-		byte[] rt = new byte[SysHeader.getLength()];
+		byte[] rt = new byte[SYS_HEADER_LENGTH];
+		ByteBuffer bf = ByteBuffer.allocate(SYS_HEADER_LENGTH);
+		bf.order(ByteOrder.LITTLE_ENDIAN);
+		byte whitespace = (byte)32;
+		Arrays.fill(rt, whitespace);
 		
 		for(SysHeader field : SysHeader.values()) {
 			Object value = map.get(field.name());
@@ -351,9 +358,9 @@ public enum SysHeader {
 					str = value.toString();
 				}
 				
-				if(str!=null)
+				if(str!=null) {
 					System.arraycopy(str.getBytes(), 0, rt, field.offset, str.getBytes().length);
-				
+				}
 			}
 		}
 		

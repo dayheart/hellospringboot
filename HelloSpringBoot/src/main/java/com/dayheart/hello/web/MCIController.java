@@ -86,6 +86,7 @@ public class MCIController {
 			for(String outlet:outlets) {
 				//XLog.stdout(String.format("EGRESS[%d]:%s", i++, outlet));
 				switch(outlet) {
+				/* 2025.03.10
 				case "ESB" :
 					SysHeader.setINFC(sysHeader, "OFFICES", "N", "", SysHeader.TMSG_SVC_ID.getField(sysHeader)); // INFC_ID(part), SVC_ID(eng)
 					break;
@@ -97,26 +98,64 @@ public class MCIController {
 					break;
 				default :
 					SysHeader.setINFC(sysHeader, "SALESREPS", "N", "", SysHeader.TMSG_SVC_ID.getField(sysHeader)); // INFC_ID(part), SVC_ID(eng)
+				*/
+				case "ESB" :
+					SysHeader.setINFC(sysHeader, "OFFICES", "N", SysHeader.TMSG_APP_ID.getField(sysHeader), SysHeader.TMSG_SVC_ID.getField(sysHeader)); // INFC_ID(part), SVC_ID(eng)
+					break;
+				case "COR" :
+					SysHeader.setINFC(sysHeader, "ORDERS", "N", SysHeader.TMSG_APP_ID.getField(sysHeader), SysHeader.TMSG_SVC_ID.getField(sysHeader)); // INFC_ID(part), SVC_ID(eng)
+					break;
+				case "FEP" :
+					SysHeader.setINFC(sysHeader, "CUSTOMERS", "N", SysHeader.TMSG_APP_ID.getField(sysHeader), SysHeader.TMSG_SVC_ID.getField(sysHeader)); // INFC_ID(part), SVC_ID(eng)
+					break;
+				case "IGT" :
+					SysHeader.setINFC(sysHeader, "PRODUCTS", "N", SysHeader.TMSG_APP_ID.getField(sysHeader), SysHeader.TMSG_SVC_ID.getField(sysHeader)); // INFC_ID(part), SVC_ID(eng)
+					AdapterParameter adapterParameter = new AdapterParameter();
+					adapterParameter.setRequestData(SysHeader.toBytes(sysHeader));
+					
+					host = tierConfig.getHost("IGT");
+					port = tierConfig.getPort("IGT");
+					
+					XLog.stdout(String.format("IGT_IP [%s]", host));
+					XLog.stdout(String.format("IGT_port [%d]", port));
+					
+					adapterParameter.put("serverIP", host);
+					adapterParameter.put("port", port);
+					
+					SocketConnector connector = new SocketConnector();
+					try {
+						connector.callService(adapterParameter);
+					} catch (IGateConnectorException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					break;
+				default :
+					SysHeader.setINFC(sysHeader, "SALESREPS", "N", SysHeader.TMSG_APP_ID.getField(sysHeader), SysHeader.TMSG_SVC_ID.getField(sysHeader)); // INFC_ID(part), SVC_ID(eng)
 				}
 				
 				protocol = tierConfig.getProtocol(outlet.toUpperCase());
-				host = tierConfig.getHost(outlet.toUpperCase());
-				port = tierConfig.getPort(outlet.toUpperCase());
-				uri = tierConfig.getUri(outlet.toUpperCase());
-				String[] uris = uri.split(",");
 				
-				int idx = Utils.getRandomNumber(0, (uris.length));
-				uri = uris[idx];
-				url = String.format("%s://%s:%d%s", protocol,host,port,uri);
-				
-				String responseStr = null;
-				if(uri.endsWith("json")) {
-					responseStr = TCPClient.executeJsonByApacheHttpClient(url, "POST", SysHeader.toJsonString(sysHeader));
-				} else {
-					responseStr = new String( TCPClient.executeBytesByApacheHttpClient(url, "POST", SysHeader.toBytes(sysHeader)));
+				if(protocol!=null && protocol.equals("http")) {
+					host = tierConfig.getHost(outlet.toUpperCase());
+					port = tierConfig.getPort(outlet.toUpperCase());
+					uri = tierConfig.getUri(outlet.toUpperCase());
+					String[] uris = uri.split(",");
+					
+					int idx = Utils.getRandomNumber(0, (uris.length));
+					uri = uris[idx];
+					url = String.format("%s://%s:%d%s", protocol,host,port,uri);
+					
+					String responseStr = null;
+					
+					if(uri.endsWith("json")) {
+						responseStr = TCPClient.executeJsonByApacheHttpClient(url, "POST", SysHeader.toJsonString(sysHeader));
+					} else {
+						responseStr = new String( TCPClient.executeBytesByApacheHttpClient(url, "POST", SysHeader.toBytes(sysHeader)));
+					}
+					
+					XLog.stdout("MCI_OUT_URL: " + url);
 				}
-				
-				XLog.stdout("MCI_OUT_URL: " + url);
 				
 			}
 		}
