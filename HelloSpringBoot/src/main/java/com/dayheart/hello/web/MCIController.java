@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
+import com.dayheart.hello.kafka.KafkaProducer;
 import com.dayheart.hello.property.TierConfig;
 import com.dayheart.tcp.TCPClient;
 import com.dayheart.util.Utils;
@@ -40,6 +41,10 @@ public class MCIController {
 	private TierConfig tierConfig;
 	
 	//@Value("#{tier['COR.HOST']}")
+	
+	// 2025.04.29 현대차증권 테스트
+	@Autowired
+	private KafkaProducer producer;
 	
 
 	public MCIController() {
@@ -155,6 +160,8 @@ public class MCIController {
 					}
 					
 					XLog.stdout("MCI_OUT_URL: " + url);
+				} else if(protocol!=null && protocol.equals("kafka")) {
+					producer.sendMessage(SysHeader.toJsonString(sysHeader));
 				}
 				
 			}

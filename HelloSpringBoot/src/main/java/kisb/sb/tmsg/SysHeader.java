@@ -443,6 +443,9 @@ public enum SysHeader {
 		} catch (JsonProcessingException jsonProcEx) {
 			jsonProcEx.printStackTrace();
 		}
+		
+		//XLog.stdout( String.format("JSON [%s]", json) );
+		
 		return json;
 	}
 	
