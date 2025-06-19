@@ -58,6 +58,7 @@ public class KafkaConsumer {
 		String egress = tierConfig.getEgress(sysCd);
 		//XLog.stdout(String.format("MCI_EGRESS [%s]", egress));
 		String out = tierConfig.getOut(sysCd);
+		XLog.stdout(String.format("SYS_CD[%s] EGRESS[%s]", sysCd, egress));
 		if(egress!=null && egress.length()>0) {
 			String[] outlets = egress.split(",");
 			String url;
@@ -96,6 +97,11 @@ public class KafkaConsumer {
 				}
 				
 				protocol = tierConfig.getProtocol(outlet.toUpperCase());
+				if(protocol == "kafka") {
+					XLog.stdout(String.format("SKIP_MESSAGE_PROTOCOL[%s]", protocol));
+					continue;
+				}
+				
 				host = tierConfig.getHost(outlet.toUpperCase());
 				port = tierConfig.getPort(outlet.toUpperCase());
 				uri = tierConfig.getUri(outlet.toUpperCase());

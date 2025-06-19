@@ -18,12 +18,12 @@ public class KafkaController {
 	
 	@PostMapping("/kafka1")
 	public void sendMessage1(@RequestBody String message) {
-        producer.sendMessage(message);
+        //producer.sendMessage(message);
     }
     
     @PostMapping("/kafka2")
     public void sendMessage2(@RequestBody String message) {
-        producer.sendMessage(message);
+        //producer.sendMessage(message);
     }
 
 }
